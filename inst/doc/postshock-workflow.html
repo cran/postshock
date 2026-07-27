@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Post-Shock Forecasting Workflow</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Post-Shock Forecasting Workflow</h1>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#overview" id="toc-overview">Overview</a></li>
+<li><a href="#package-data-structure" id="toc-package-data-structure">Package data structure</a></li>
+<li><a href="#donor-balancing-weights-with-dbw" id="toc-donor-balancing-weights-with-dbw">Donor balancing weights with
+<code>dbw()</code></a></li>
+<li><a href="#mean-forecasting-with-synthprediction" id="toc-mean-forecasting-with-synthprediction">Mean forecasting with
+<code>SynthPrediction()</code></a>
+<ul>
+<li><a href="#conocophillips-example" id="toc-conocophillips-example">ConocoPhillips example</a></li>
+<li><a href="#fit-a-one-step-post-shock-forecast" id="toc-fit-a-one-step-post-shock-forecast">Fit a one-step post-shock
+forecast</a></li>
+<li><a href="#inspect-forecasts" id="toc-inspect-forecasts">Inspect
+forecasts</a></li>
+<li><a href="#compare-the-forecasts" id="toc-compare-the-forecasts">Compare the forecasts</a></li>
+<li><a href="#inspect-donor-weights-and-the-combined-adjustment" id="toc-inspect-donor-weights-and-the-combined-adjustment">Inspect donor
+weights and the combined adjustment</a></li>
+</ul></li>
+<li><a href="#structured-donor-pools" id="toc-structured-donor-pools">Structured donor pools</a>
+<ul>
+<li><a href="#define-the-donor-pools" id="toc-define-the-donor-pools">Define the donor pools</a></li>
+<li><a href="#fit-the-multipool-specification" id="toc-fit-the-multipool-specification">Fit the MultiPool
+specification</a></li>
+<li><a href="#inspect-the-pool-specific-adjustments" id="toc-inspect-the-pool-specific-adjustments">Inspect the pool-specific
+adjustments</a></li>
+</ul></li>
+<li><a href="#volatility-forecasting-with-synthvolforecast" id="toc-volatility-forecasting-with-synthvolforecast">Volatility
+forecasting with <code>SynthVolForecast()</code></a>
+<ul>
+<li><a href="#load-the-iyg-example" id="toc-load-the-iyg-example">Load
+the IYG example</a></li>
+<li><a href="#produce-a-variance-forecast" id="toc-produce-a-variance-forecast">Produce a variance forecast</a>
+<ul>
+<li><a href="#inspect-the-selected-garch-x-orders" id="toc-inspect-the-selected-garch-x-orders">Inspect the selected
+GARCH-X orders</a></li>
+</ul></li>
+<li><a href="#inspect-donor-weights-and-variance-adjustments" id="toc-inspect-donor-weights-and-variance-adjustments">Inspect donor
+weights and variance adjustments</a>
+<ul>
+<li><a href="#compare-the-variance-forecasts" id="toc-compare-the-variance-forecasts">Compare the variance
+forecasts</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#interpretation-and-practical-guidance" id="toc-interpretation-and-practical-guidance">Interpretation and
+practical guidance</a>
+<ul>
+<li><a href="#align-episodes-consistently" id="toc-align-episodes-consistently">Align episodes
+consistently</a></li>
+<li><a href="#separate-donor-matching-from-model-regressors" id="toc-separate-donor-matching-from-model-regressors">Separate donor
+matching from model regressors</a></li>
+<li><a href="#choose-donors-using-substantive-information" id="toc-choose-donors-using-substantive-information">Choose donors using
+substantive information</a></li>
+<li><a href="#inspect-weights-and-convergence" id="toc-inspect-weights-and-convergence">Inspect weights and
+convergence</a></li>
+<li><a href="#interpret-empirical-variance-forecasts-carefully" id="toc-interpret-empirical-variance-forecasts-carefully">Interpret
+empirical variance forecasts carefully</a></li>
+<li><a href="#avoid-post-shock-information-leakage" id="toc-avoid-post-shock-information-leakage">Avoid post-shock
+information leakage</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">References</a></li>
+</ul>
+</div>
+
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>The donor-adjustment framework builds on the post-shock forecasting
+approach of Lin and Eck (2021).</p>
+<p>Large structural shocks can cause forecasting models fitted only to
+pre-shock data to perform poorly in the post-shock period. The
+<strong>postshock</strong> package provides a donor-based forecasting
+framework that uses information from historical shock episodes to adjust
+forecasts following a new shock to the target series.</p>
+<p>The package supports forecasting of both conditional mean and
+volatility dynamics. Its main components are:</p>
+<ul>
+<li><code>dbw()</code>, which constructs donor balancing weights using
+pre-shock features;</li>
+<li><code>SynthPrediction()</code>, which produces donor-adjusted
+post-shock mean forecasts;</li>
+<li>the MultiPool extension of <code>SynthPrediction()</code>, which
+organizes donors into interpretable shock groups;</li>
+<li><code>auto_garchx()</code>, which selects GARCH-X orders using an
+information criterion;</li>
+<li><code>SynthVolForecast()</code>, which produces donor-adjusted
+post-shock conditional variance forecasts using GARCH-X models.</li>
+</ul>
+<p>The general workflow is:</p>
+<ol style="list-style-type: decimal">
+<li>define a target episode and a collection of historical donor
+episodes;</li>
+<li>align the target and donors relative to their shock times;</li>
+<li>compare their pre-shock characteristics and estimate donor
+weights;</li>
+<li>estimate donor-specific post-shock effects; and</li>
+<li>add the weighted donor effect to a baseline forecast for the
+target.</li>
+</ol>
+<p>This vignette demonstrates the main package workflows using processed
+data objects distributed with <strong>postshock</strong>. We first
+illustrate post-shock mean forecasting using the ConocoPhillips example,
+then introduce the structured donor-pool extension, and finally
+demonstrate post-shock volatility forecasting using the IYG example.</p>
+</div>
+<div id="package-data-structure" class="section level1">
+<h1>Package data structure</h1>
+<p>The forecasting functions in <strong>postshock</strong> operate on
+collections of target and donor series aligned relative to their
+respective shock times. At the function interface, the target and donor
+series are supplied through <code>Y_series_list</code>, with the target
+stored in the first position and the historical donors stored in the
+remaining positions.</p>
+<p>Each series has its own shock-timing information:</p>
+<ul>
+<li><code>shock_time_vec</code> records the last pre-shock observation
+for each series;</li>
+<li><code>shock_length_vec</code> defines the post-shock window length
+associated with each series; for donor series, this window is used to
+estimate the corresponding shock effect.</li>
+</ul>
+<p>The covariate structure differs between the two forecasting
+workflows:</p>
+<ul>
+<li><code>SynthPrediction()</code> uses
+<code>covariates_series_list</code>, whose elements are aligned with the
+target and donor series in <code>Y_series_list</code>;</li>
+<li><code>SynthVolForecast()</code> uses
+<code>covariates_series_list</code> for donor covariates only, while
+target covariates are supplied separately through
+<code>target_covariates</code>.</li>
+</ul>
+<p>The ordering of the series, covariate inputs, shock times, and shock
+lengths must remain consistent within the relevant workflow. Entries
+representing the same target or donor episode must be correctly
+aligned.</p>
+<p>The <code>cop_oil_postshock</code> object follows the
+mean-forecasting structure. Its target and donor series are stored in
+<code>Y</code>, while their corresponding covariate matrices are stored
+in <code>X</code>.</p>
+<p>The list names do not need to be identical across <code>Y</code> and
+<code>X</code>, but they should clearly identify the corresponding
+episodes. For example, <code>Y_2008_03_17</code> and
+<code>X_2008_03_17</code> contain the series and covariate matrix
+associated with the same historical shock episode.</p>
+<p>This vignette uses two processed data objects distributed with the
+package:</p>
+<ul>
+<li><code>cop_oil_postshock</code>, for post-shock mean forecasting;
+and</li>
+<li><code>iyg_onestep_input</code>, for post-shock variance
+forecasting.</li>
+</ul>
+<p>Additional processed objects for the Apple control-shock examples are
+also available in the package.</p>
+<p>We begin with the ConocoPhillips data object.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;cop_oil_postshock&quot;</span>, <span class="at">package =</span> <span class="st">&quot;postshock&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">names</span>(cop_oil_postshock)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;covar_names&quot;      &quot;Y&quot;                &quot;X&quot;                &quot;shock_time_vec&quot;  </span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; [5] &quot;shock_length_vec&quot;</span></span></code></pre></div>
+<p>The target and donor series are stored in <code>Y</code>, while their
+corresponding covariate matrices are stored in <code>X</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>cop_structure <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="at">Position =</span> <span class="fu">seq_along</span>(cop_oil_postshock<span class="sc">$</span>Y),</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="at">Series =</span> <span class="fu">names</span>(cop_oil_postshock<span class="sc">$</span>Y),</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">Covariates =</span> <span class="fu">names</span>(cop_oil_postshock<span class="sc">$</span>X),</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="at">Shock_time =</span> cop_oil_postshock<span class="sc">$</span>shock_time_vec,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">Shock_length =</span> cop_oil_postshock<span class="sc">$</span>shock_length_vec</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  cop_structure,</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">&quot;Alignment of the target and donor inputs in `cop_oil_postshock`.&quot;</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Alignment of the target and donor inputs in
+<code>cop_oil_postshock</code>.</caption>
+<thead>
+<tr class="header">
+<th align="right">Position</th>
+<th align="left">Series</th>
+<th align="left">Covariates</th>
+<th align="right">Shock_time</th>
+<th align="right">Shock_length</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">Y_target</td>
+<td align="left">X_target</td>
+<td align="right">30</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Y_2008_03_17</td>
+<td align="left">X_2008_03_17</td>
+<td align="right">30</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Y_2014_11_28</td>
+<td align="left">X_2014_11_28</td>
+<td align="right">30</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Y_2008_09_09</td>
+<td align="left">X_2008_09_09</td>
+<td align="right">30</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="left">Y_2008_09_15</td>
+<td align="left">X_2008_09_15</td>
+<td align="right">30</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="left">Y_2008_09_29</td>
+<td align="left">X_2008_09_29</td>
+<td align="right">30</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<p>The first element represents the target episode, and the remaining
+elements represent historical donor episodes. For every series,
+<code>shock_time_vec</code> identifies the last observation in the
+pre-shock period, so the shock effect begins at the following
+observation.</p>
+</div>
+<div id="donor-balancing-weights-with-dbw" class="section level1">
+<h1>Donor balancing weights with <code>dbw()</code></h1>
+<p>Historical donor episodes are not necessarily equally informative for
+a new target shock. The function <code>dbw()</code> constructs donor
+balancing weights using characteristics observed before the shock.</p>
+<p>The function compares the target’s pre-shock feature vector with
+weighted combinations of the donor feature vectors. Donors that provide
+a closer pre-shock match can therefore receive larger weights.</p>
+<p>A commonly used specification constrains the donor weights to be
+nonnegative and sum to one. Under this specification, the weights can be
+interpreted as the contribution of each donor to a synthetic donor
+combination.</p>
+<p>For the ConocoPhillips example, we use all available covariate
+columns and an L2-regularized balancing specification.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>cop_dbw <span class="ot">&lt;-</span> <span class="fu">dbw</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="at">X =</span> cop_oil_postshock<span class="sc">$</span>X,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">dbw_indices =</span> <span class="fu">seq_len</span>(<span class="fu">ncol</span>(cop_oil_postshock<span class="sc">$</span>X[[<span class="dv">1</span>]])),</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">shock_time_vec =</span> cop_oil_postshock<span class="sc">$</span>shock_time_vec,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="at">center =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">scale =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">sum_to_1 =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">bounded_below_by =</span> <span class="dv">0</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="at">bounded_above_by =</span> <span class="dv">1</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="at">normchoice =</span> <span class="st">&quot;l2&quot;</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="at">penalty_normchoice =</span> <span class="st">&quot;l2&quot;</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  <span class="at">penalty_lambda =</span> <span class="fl">1e-2</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>)</span></code></pre></div>
+<p>The returned object contains the estimated donor weights, the final
+balancing loss, and the optimizer convergence result.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">names</span>(cop_dbw)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;opt_params&quot;  &quot;convergence&quot; &quot;loss&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>cop_dbw<span class="sc">$</span>convergence</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;convergence&quot;</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>cop_dbw<span class="sc">$</span>loss</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; [1] 2.818126</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="fu">sum</span>(cop_dbw<span class="sc">$</span>opt_params)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span></code></pre></div>
+<p>The convergence result indicates whether the numerical optimization
+completed successfully. The loss measures the remaining discrepancy
+between the target features and the weighted donor features under the
+selected scaling and regularization specification. It is primarily
+useful for comparing alternative DBW specifications fitted to the same
+data.</p>
+<p>The donor weights are stored in <code>opt_params</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>cop_weight_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">Donor =</span> <span class="fu">sub</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="st">&quot;^Y_&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    <span class="st">&quot;&quot;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="fu">names</span>(cop_oil_postshock<span class="sc">$</span>Y)[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  ),</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">Weight =</span> <span class="fu">as.numeric</span>(cop_dbw<span class="sc">$</span>opt_params)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  cop_weight_table,</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">&quot;Donor balancing weights for the ConocoPhillips example.&quot;</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Donor balancing weights for the ConocoPhillips
+example.</caption>
+<thead>
+<tr class="header">
+<th align="left">Donor</th>
+<th align="right">Weight</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2008_03_17</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">2014_11_28</td>
+<td align="right">0.635</td>
+</tr>
+<tr class="odd">
+<td align="left">2008_09_09</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">2008_09_15</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">2008_09_29</td>
+<td align="right">0.365</td>
+</tr>
+</tbody>
+</table>
+<p>The estimated weights sum to one, up to numerical precision. In this
+example, most of the weight is assigned to the 2014-11-28 and 2008-09-29
+episodes, while the remaining donor episodes receive weights close to
+zero. Under the selected pre-shock covariates and balancing
+specification, these two episodes therefore provide the main
+contribution to the synthetic donor combination.</p>
+<p>These weights determine how donor-specific shock effects are
+combined. They should not be interpreted as probabilities that
+particular historical events will recur.</p>
+<p>In most applications, users do not need to call <code>dbw()</code>
+separately. <code>SynthPrediction()</code> and
+<code>SynthVolForecast()</code> can call it internally when donor-based
+weighting is requested. A direct call is nevertheless useful for
+examining the pre-shock match and understanding which donors contribute
+to the synthetic adjustment.</p>
+</div>
+<div id="mean-forecasting-with-synthprediction" class="section level1">
+<h1>Mean forecasting with <code>SynthPrediction()</code></h1>
+<p><code>SynthPrediction()</code> produces post-shock mean forecasts by
+combining a baseline forecast for the target series with estimated
+post-shock effects from historical donor episodes.</p>
+<p>The procedure has four main steps. First, an ARIMA or ARIMAX model
+containing a post-shock indicator is fitted to each donor series. The
+coefficient of this indicator represents the estimated post-shock shift
+for that donor. Second, the donor-specific shifts are combined using
+either equal weights or donor balancing weights. Third, a baseline model
+is fitted to the target using only its pre-shock observations. Finally,
+the combined donor shift is added to the target baseline forecast.</p>
+<p>The function returns three forecast versions:</p>
+<ul>
+<li><code>unadjusted</code>, the target baseline forecast without a
+donor adjustment;</li>
+<li><code>arithmetic_mean</code>, the baseline forecast adjusted by the
+simple average of the donor-specific post-shock effects; and</li>
+<li><code>adjusted</code>, the baseline forecast adjusted by the
+DBW-weighted donor effect.</li>
+</ul>
+<div id="conocophillips-example" class="section level2">
+<h2>ConocoPhillips example</h2>
+<p>The target episode is the large decline in the ConocoPhillips
+(<code>COP</code>) share price in March 2020. Five earlier crisis and
+oil-market episodes are used as donors. The aligned series, covariates,
+and shock timing information are stored in the
+<code>cop_oil_postshock</code> object loaded in the previous
+section.</p>
+</div>
+<div id="fit-a-one-step-post-shock-forecast" class="section level2">
+<h2>Fit a one-step post-shock forecast</h2>
+<p>We set <code>k = 1</code> to forecast the first observation after the
+target’s pre-shock period. The call below uses the same feature columns,
+centering and scaling choices, and L2 penalty as the direct
+<code>dbw()</code> example above.</p>
+<p>The covariate matrices are used to construct donor weights. Because
+<code>covariate_indices = NULL</code>, they are not included as
+regressors in the ARIMA models. In that case, each donor model contains
+the post-shock indicator, while the target baseline is fitted without
+covariate regressors.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>cop_fit <span class="ot">&lt;-</span> <span class="fu">SynthPrediction</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="at">Y_series_list =</span> cop_oil_postshock<span class="sc">$</span>Y,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="at">covariates_series_list =</span> cop_oil_postshock<span class="sc">$</span>X,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">shock_time_vec =</span> cop_oil_postshock<span class="sc">$</span>shock_time_vec,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">shock_length_vec =</span> cop_oil_postshock<span class="sc">$</span>shock_length_vec,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">dbw_indices =</span> <span class="fu">seq_len</span>(<span class="fu">ncol</span>(cop_oil_postshock<span class="sc">$</span>X[[<span class="dv">1</span>]])),</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="at">dbw_center =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="at">dbw_scale =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="at">use_dbw =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="at">covariate_indices =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  <span class="at">seasonal =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  <span class="at">penalty_lambda =</span> <span class="fl">1e-2</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="at">penalty_normchoice =</span> <span class="st">&quot;l2&quot;</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>)</span></code></pre></div>
+<p>Setting <code>seasonal = TRUE</code> allows the function to consider
+a seasonal specification when a meaningful seasonal frequency is
+detected. It does not require every fitted model to contain a seasonal
+component.</p>
+</div>
+<div id="inspect-forecasts" class="section level2">
+<h2>Inspect forecasts</h2>
+<p>The returned object has three main components.
+<code>predictions</code> contains the forecast versions,
+<code>linear_combinations</code> contains the donor weights, and
+<code>meta</code> contains donor-specific effects and model
+information.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">names</span>(cop_fit)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;linear_combinations&quot; &quot;predictions&quot;         &quot;meta&quot;</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">names</span>(cop_fit<span class="sc">$</span>predictions)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;unadjusted&quot;      &quot;adjusted&quot;        &quot;arithmetic_mean&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="fu">names</span>(cop_fit<span class="sc">$</span>meta)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; [1] &quot;n_donors&quot;       &quot;shock_time&quot;     &quot;shock_length&quot;   &quot;dbw_status&quot;    </span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; [5] &quot;weights&quot;        &quot;omega_vec&quot;      &quot;combined_omega&quot; &quot;arima_order&quot;   </span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; [9] &quot;ic_used&quot;</span></span></code></pre></div>
+</div>
+<div id="compare-the-forecasts" class="section level2">
+<h2>Compare the forecasts</h2>
+<p>The first post-shock observation occurs at the index immediately
+following the last pre-shock observation of the target.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>forecast_index <span class="ot">&lt;-</span> cop_oil_postshock<span class="sc">$</span>shock_time_vec[<span class="dv">1</span>] <span class="sc">+</span> <span class="dv">1</span><span class="dt">L</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>observed_value <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  cop_oil_postshock<span class="sc">$</span>Y[[<span class="dv">1</span>]][forecast_index]</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>forecast_values <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="fu">as.numeric</span>(cop_fit<span class="sc">$</span>predictions<span class="sc">$</span>unadjusted[<span class="dv">1</span>]),</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="fu">as.numeric</span>(cop_fit<span class="sc">$</span>predictions<span class="sc">$</span>arithmetic_mean[<span class="dv">1</span>]),</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="fu">as.numeric</span>(cop_fit<span class="sc">$</span>predictions<span class="sc">$</span>adjusted[<span class="dv">1</span>])</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>)</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>cop_forecast_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>  <span class="at">Method =</span> <span class="fu">c</span>(</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>    <span class="st">&quot;Observed value&quot;</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>    <span class="st">&quot;Unadjusted&quot;</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>    <span class="st">&quot;Arithmetic mean&quot;</span>,</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>    <span class="st">&quot;DBW adjusted&quot;</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>  ),</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>  <span class="at">Value =</span> <span class="fu">c</span>(</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>    observed_value,</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>    forecast_values</span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>  ),</span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a>  <span class="at">Absolute_error =</span> <span class="fu">c</span>(</span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a>    <span class="cn">NA_real_</span>,</span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a>    <span class="fu">abs</span>(forecast_values <span class="sc">-</span> observed_value)</span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a>  )</span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a>)</span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a>  cop_forecast_table,</span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Method&quot;</span>, <span class="st">&quot;Value&quot;</span>, <span class="st">&quot;Absolute error&quot;</span>),</span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a>  <span class="at">caption =</span> <span class="fu">paste</span>(</span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a>    <span class="st">&quot;One-step forecast comparison for the March 2020&quot;</span>,</span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a>    <span class="st">&quot;ConocoPhillips shock episode.&quot;</span></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a>  )</span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>One-step forecast comparison for the March 2020 ConocoPhillips
+shock episode.</caption>
+<thead>
+<tr class="header">
+<th align="left">Method</th>
+<th align="right">Value</th>
+<th align="right">Absolute error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Observed value</td>
+<td align="right">34.070</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Unadjusted</td>
+<td align="right">44.734</td>
+<td align="right">10.664</td>
+</tr>
+<tr class="odd">
+<td align="left">Arithmetic mean</td>
+<td align="right">39.750</td>
+<td align="right">5.680</td>
+</tr>
+<tr class="even">
+<td align="left">DBW adjusted</td>
+<td align="right">39.110</td>
+<td align="right">5.040</td>
+</tr>
+</tbody>
+</table>
+<p>The observed value is included only for retrospective evaluation. It
+is not supplied to <code>SynthPrediction()</code> when the target model
+or donor weights are estimated.</p>
+<p>As shown in the table, both donor-adjusted forecasts reduce the
+absolute error relative to the unadjusted baseline. The DBW-adjusted
+forecast also has a smaller error than the arithmetic-mean adjustment in
+this example.</p>
+<p>The improvement over the unadjusted baseline is substantial, whereas
+the additional gain from DBW weighting over equal weighting is more
+modest. Because the comparison is based on a single retrospective
+one-step forecast, it should be interpreted as an illustration of the
+workflow rather than general evidence that DBW always performs
+better.</p>
+</div>
+<div id="inspect-donor-weights-and-the-combined-adjustment" class="section level2">
+<h2>Inspect donor weights and the combined adjustment</h2>
+<p>The donor weights used by <code>SynthPrediction()</code> are stored
+in <code>linear_combinations</code>. The estimated donor-specific
+post-shock effects are stored in <code>meta$omega_vec</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>cop_donor_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="at">Donor =</span> <span class="fu">sub</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>    <span class="st">&quot;^Y_&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>    <span class="st">&quot;&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>    <span class="fu">names</span>(cop_oil_postshock<span class="sc">$</span>Y)[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  ),</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="at">Weight =</span> <span class="fu">as.numeric</span>(cop_fit<span class="sc">$</span>linear_combinations),</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="at">Estimated_effect =</span> <span class="fu">as.numeric</span>(cop_fit<span class="sc">$</span>meta<span class="sc">$</span>omega_vec)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>)</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>  cop_donor_summary,</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>    <span class="st">&quot;Donor&quot;</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>    <span class="st">&quot;DBW weight&quot;</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>    <span class="st">&quot;Estimated post-shock effect&quot;</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>  ),</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">&quot;Donor weights and estimated effects for the COP example.&quot;</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Donor weights and estimated effects for the COP
+example.</caption>
+<thead>
+<tr class="header">
+<th align="left">Donor</th>
+<th align="right">DBW weight</th>
+<th align="right">Estimated post-shock effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2008_03_17</td>
+<td align="right">0.000</td>
+<td align="right">-1.772</td>
+</tr>
+<tr class="even">
+<td align="left">2014_11_28</td>
+<td align="right">0.635</td>
+<td align="right">-5.205</td>
+</tr>
+<tr class="odd">
+<td align="left">2008_09_09</td>
+<td align="right">0.000</td>
+<td align="right">-7.269</td>
+</tr>
+<tr class="even">
+<td align="left">2008_09_15</td>
+<td align="right">0.000</td>
+<td align="right">-4.318</td>
+</tr>
+<tr class="odd">
+<td align="left">2008_09_29</td>
+<td align="right">0.365</td>
+<td align="right">-6.353</td>
+</tr>
+</tbody>
+</table>
+<p>Donors with weights close to zero make little contribution to the
+final adjustment, even when their estimated post-shock effects are
+relatively large, whereas donors with larger weights have greater
+influence.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="at">Unadjusted_forecast =</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>    <span class="fu">as.numeric</span>(cop_fit<span class="sc">$</span>predictions<span class="sc">$</span>unadjusted[<span class="dv">1</span>]),</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="at">Combined_donor_effect =</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>    <span class="fu">as.numeric</span>(cop_fit<span class="sc">$</span>meta<span class="sc">$</span>combined_omega),</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="at">Adjusted_forecast =</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>    <span class="fu">as.numeric</span>(cop_fit<span class="sc">$</span>predictions<span class="sc">$</span>adjusted[<span class="dv">1</span>])</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>      <span class="st">&quot;Unadjusted forecast&quot;</span>,</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>      <span class="st">&quot;Combined donor effect&quot;</span>,</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>      <span class="st">&quot;DBW-adjusted forecast&quot;</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>    ),</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Construction of the DBW-adjusted COP forecast.&quot;</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>  )</span></code></pre></div>
+<table>
+<caption>Construction of the DBW-adjusted COP forecast.</caption>
+<thead>
+<tr class="header">
+<th align="right">Unadjusted forecast</th>
+<th align="right">Combined donor effect</th>
+<th align="right">DBW-adjusted forecast</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">44.734</td>
+<td align="right">-5.624</td>
+<td align="right">39.11</td>
+</tr>
+</tbody>
+</table>
+<p>The sign of the combined donor effect determines the direction of the
+adjustment. In this example, the combined effect is negative, so it
+lowers the unadjusted forecast and moves it closer to the observed
+post-shock value.</p>
+</div>
+</div>
+<div id="structured-donor-pools" class="section level1">
+<h1>Structured donor pools</h1>
+<p>A single-pool analysis treats all historical donor episodes as
+members of one common donor set. In some applications, however, donor
+shocks may represent different economic mechanisms. The MultiPool
+extension allows donors to be organized into interpretable groups before
+their estimated adjustments are aggregated.</p>
+<p>For the ConocoPhillips example, we separate the donor episodes into
+two channels:</p>
+<ul>
+<li>a <code>supply</code> pool containing the November 2014 oil-price
+shock; and</li>
+<li>a <code>demand</code> pool containing the crisis-related episodes
+from 2008.</li>
+</ul>
+<p>These classifications are specified by the analyst and should reflect
+the economic mechanisms underlying the historical events. Numerical
+pre-shock characteristics are used later to construct donor weights
+within each pool.</p>
+<div id="define-the-donor-pools" class="section level2">
+<h2>Define the donor pools</h2>
+<p>Pools are supplied as a named list. Each element contains donor names
+that must match the corresponding entries in
+<code>names(Y_series_list)</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>cop_pools <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  <span class="at">supply =</span> <span class="st">&quot;Y_2014_11_28&quot;</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="at">demand =</span> <span class="fu">c</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>    <span class="st">&quot;Y_2008_03_17&quot;</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>    <span class="st">&quot;Y_2008_09_09&quot;</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>    <span class="st">&quot;Y_2008_09_15&quot;</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>    <span class="st">&quot;Y_2008_09_29&quot;</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  )</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>)</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>cop_pool_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>  <span class="at">Pool =</span> <span class="fu">names</span>(cop_pools),</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  <span class="at">Donors =</span> <span class="fu">unname</span>(</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>    <span class="fu">vapply</span>(</span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>      cop_pools,</span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>      <span class="cf">function</span>(x) {</span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>        <span class="fu">paste</span>(</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>          <span class="fu">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;-&quot;</span>, <span class="fu">sub</span>(<span class="st">&quot;^Y_&quot;</span>, <span class="st">&quot;&quot;</span>, x)),</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>          <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>        )</span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>      },</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>      <span class="fu">character</span>(<span class="dv">1</span>)</span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a>    )</span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a>  )</span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>)</span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>  cop_pool_table,</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Pool&quot;</span>, <span class="st">&quot;Donor episodes&quot;</span>),</span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">&quot;Structured donor pools for the ConocoPhillips example.&quot;</span></span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Structured donor pools for the ConocoPhillips
+example.</caption>
+<thead>
+<tr class="header">
+<th align="left">Pool</th>
+<th align="left">Donor episodes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">supply</td>
+<td align="left">2014-11-28</td>
+</tr>
+<tr class="even">
+<td align="left">demand</td>
+<td align="left">2008-03-17, 2008-09-09, 2008-09-15, 2008-09-29</td>
+</tr>
+</tbody>
+</table>
+<p>The first element of <code>Y_series_list</code> is always treated as
+the target. Only donor names should therefore be included in
+<code>pools</code>; the target is added automatically when each
+pool-specific model is fitted.</p>
+</div>
+<div id="fit-the-multipool-specification" class="section level2">
+<h2>Fit the MultiPool specification</h2>
+<p>Providing the <code>pools</code> argument causes
+<code>SynthPrediction()</code> to use the MultiPool extension. The
+function retains a common unadjusted target forecast and estimates a
+separate donor adjustment within each pool.</p>
+<p>Here, <code>pool_use_dbw = TRUE</code> applies donor balancing within
+each pool. Because the supply pool contains only one donor, its
+within-pool weight is necessarily one. Donor balancing primarily affects
+the multi-donor demand pool.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>cop_multipool <span class="ot">&lt;-</span> <span class="fu">SynthPrediction</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  <span class="at">Y_series_list =</span> cop_oil_postshock<span class="sc">$</span>Y,</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="at">covariates_series_list =</span> cop_oil_postshock<span class="sc">$</span>X,</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="at">shock_time_vec =</span> cop_oil_postshock<span class="sc">$</span>shock_time_vec,</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="at">shock_length_vec =</span> cop_oil_postshock<span class="sc">$</span>shock_length_vec,</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  <span class="at">covariate_indices =</span> <span class="cn">NULL</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="at">seasonal =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  <span class="at">dbw_indices =</span> <span class="fu">seq_len</span>(</span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>    <span class="fu">ncol</span>(cop_oil_postshock<span class="sc">$</span>X[[<span class="dv">1</span>]])</span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  ),</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>  <span class="at">dbw_center =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>  <span class="at">dbw_scale =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>  <span class="at">penalty_lambda =</span> <span class="fl">1e-2</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>  <span class="at">penalty_normchoice =</span> <span class="st">&quot;l2&quot;</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>  <span class="at">pools =</span> cop_pools,</span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>  <span class="at">pool_agg =</span> <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a>  <span class="at">base_use_dbw =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a>  <span class="at">pool_use_dbw =</span> <span class="cn">TRUE</span></span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>)</span></code></pre></div>
+<p>With <code>pool_agg = &quot;sum&quot;</code>, the pool-specific adjustments are
+treated as additive components of the total post-shock adjustment. This
+is a modeling choice rather than a property automatically inferred from
+the data. Users can instead select <code>pool_agg = &quot;weighted&quot;</code>
+and provide a named numeric vector through
+<code>pool_weights</code>.</p>
+</div>
+<div id="inspect-the-pool-specific-adjustments" class="section level2">
+<h2>Inspect the pool-specific adjustments</h2>
+<p>The estimated adjustment for each pool is stored in
+<code>meta$multi_pool$pool_effects</code>, while the aggregated
+adjustment is stored in
+<code>meta$multi_pool$aggregated_effect</code>.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>cop_pool_effects <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  <span class="at">Pool =</span> <span class="fu">names</span>(</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>    cop_multipool<span class="sc">$</span>meta<span class="sc">$</span>multi_pool<span class="sc">$</span>pool_effects</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  ),</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="at">Estimated_adjustment =</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>    cop_multipool<span class="sc">$</span>meta<span class="sc">$</span>multi_pool<span class="sc">$</span>pool_effects</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  )</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>  cop_pool_effects,</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>    <span class="st">&quot;Pool&quot;</span>,</span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>    <span class="st">&quot;Estimated pool adjustment&quot;</span></span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>  ),</span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">&quot;Pool-specific adjustments for the ConocoPhillips example.&quot;</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Pool-specific adjustments for the ConocoPhillips
+example.</caption>
+<thead>
+<tr class="header">
+<th align="left">Pool</th>
+<th align="right">Estimated pool adjustment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">supply</td>
+<td align="right">-5.205</td>
+</tr>
+<tr class="even">
+<td align="left">demand</td>
+<td align="right">-6.353</td>
+</tr>
+</tbody>
+</table>
+<p>The MultiPool-adjusted forecast is returned in
+<code>predictions$adjusted_multipool</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>cop_multipool_values <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="fu">as.numeric</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>    cop_multipool<span class="sc">$</span>predictions<span class="sc">$</span>unadjusted[<span class="dv">1</span>]</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  ),</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>  <span class="fu">as.numeric</span>(</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>    cop_fit<span class="sc">$</span>predictions<span class="sc">$</span>adjusted[<span class="dv">1</span>]</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>  ),</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>  <span class="fu">as.numeric</span>(</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>    cop_multipool<span class="sc">$</span>predictions<span class="sc">$</span>adjusted_multipool[<span class="dv">1</span>]</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>  )</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>)</span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a>cop_multipool_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>  <span class="at">Method =</span> <span class="fu">c</span>(</span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a>    <span class="st">&quot;Observed value&quot;</span>,</span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a>    <span class="st">&quot;Unadjusted&quot;</span>,</span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a>    <span class="st">&quot;Single-pool DBW&quot;</span>,</span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a>    <span class="st">&quot;MultiPool (sum)&quot;</span></span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a>  ),</span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a>  <span class="at">Value =</span> <span class="fu">c</span>(</span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a>    observed_value,</span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a>    cop_multipool_values</span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a>  ),</span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a>  <span class="at">Absolute_error =</span> <span class="fu">c</span>(</span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a>    <span class="cn">NA_real_</span>,</span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a>    <span class="fu">abs</span>(cop_multipool_values <span class="sc">-</span> observed_value)</span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a>  )</span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a>)</span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a></span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a>  cop_multipool_table,</span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Method&quot;</span>, <span class="st">&quot;Value&quot;</span>, <span class="st">&quot;Absolute error&quot;</span>),</span>
+<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a>  <span class="at">caption =</span> <span class="fu">paste</span>(</span>
+<span id="cb14-35"><a href="#cb14-35" tabindex="-1"></a>    <span class="st">&quot;Comparison of single-pool and MultiPool forecasts&quot;</span>,</span>
+<span id="cb14-36"><a href="#cb14-36" tabindex="-1"></a>    <span class="st">&quot;for the ConocoPhillips example.&quot;</span></span>
+<span id="cb14-37"><a href="#cb14-37" tabindex="-1"></a>  )</span>
+<span id="cb14-38"><a href="#cb14-38" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Comparison of single-pool and MultiPool forecasts for the
+ConocoPhillips example.</caption>
+<thead>
+<tr class="header">
+<th align="left">Method</th>
+<th align="right">Value</th>
+<th align="right">Absolute error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Observed value</td>
+<td align="right">34.070</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Unadjusted</td>
+<td align="right">44.734</td>
+<td align="right">10.664</td>
+</tr>
+<tr class="odd">
+<td align="left">Single-pool DBW</td>
+<td align="right">39.110</td>
+<td align="right">5.040</td>
+</tr>
+<tr class="even">
+<td align="left">MultiPool (sum)</td>
+<td align="right">33.176</td>
+<td align="right">0.894</td>
+</tr>
+</tbody>
+</table>
+<p>In this example, both pool-level effects lower the unadjusted
+forecast. Their sum produces the MultiPool adjustment and moves the
+forecast closer to the observed post-shock value.</p>
+<p>The result should be interpreted as an illustration of how
+economically meaningful donor groups can be represented in the package.
+A closer forecast in this single retrospective example does not imply
+that splitting donors into multiple pools will always improve
+forecasting performance.</p>
+</div>
+</div>
+<div id="volatility-forecasting-with-synthvolforecast" class="section level1">
+<h1>Volatility forecasting with <code>SynthVolForecast()</code></h1>
+<p><code>SynthVolForecast()</code> extends the donor-adjustment
+framework to conditional variance forecasting. It combines a baseline
+variance forecast fitted to the pre-shock target series with post-shock
+variance adjustments estimated from historical donor episodes.</p>
+<p>For each donor, the function fits a GARCH-X model containing a
+post-shock indicator in the conditional variance equation. The estimated
+coefficient of this indicator represents the donor-specific variance
+adjustment. These adjustments are then combined using donor balancing
+weights and added to the target’s baseline variance forecast.</p>
+<p>The function returns three forecast versions:</p>
+<ul>
+<li><code>unadjusted</code>, the baseline conditional variance
+forecast;</li>
+<li><code>arithmetic_mean</code>, the baseline forecast adjusted by the
+simple average of the donor-specific variance effects; and</li>
+<li><code>adjusted</code>, the baseline forecast adjusted by the
+DBW-weighted donor effect.</li>
+</ul>
+<p>Because conditional variance is latent in empirical financial data,
+forecast evaluation requires an observable proxy. In the example below,
+the next-period squared return is used as a realized-variance proxy.</p>
+<div id="load-the-iyg-example" class="section level2">
+<h2>Load the IYG example</h2>
+<p>The target series is IYG, a financial-sector exchange-traded fund,
+and the target shock is the 2016 U.S. presidential election. Historical
+election and political-uncertainty episodes serve as potential
+donors.</p>
+<p>The processed inputs are distributed with <strong>postshock</strong>
+in the <code>iyg_onestep_input</code> object.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;iyg_onestep_input&quot;</span>, <span class="at">package =</span> <span class="st">&quot;postshock&quot;</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="fu">names</span>(iyg_onestep_input)</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;description&quot;      &quot;target_symbol&quot;    &quot;target_event&quot;     &quot;inputs&quot;          </span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt; [5] &quot;donor_pool_specs&quot; &quot;evaluation&quot;</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="fu">names</span>(iyg_onestep_input<span class="sc">$</span>inputs)</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;all&quot;            &quot;restricted&quot;     &quot;elections_only&quot;</span></span></code></pre></div>
+<p>The object provides three analyst-defined donor-pool configurations:
+<code>all</code>, <code>restricted</code>, and
+<code>elections_only</code>. In this vignette, we use the
+<code>restricted</code> configuration to demonstrate the main workflow.
+The donor-pool choice is treated as part of the analysis design rather
+than selected using the realized forecast error.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>iyg_restricted <span class="ot">&lt;-</span> iyg_onestep_input<span class="sc">$</span>inputs<span class="sc">$</span>restricted</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="fu">names</span>(iyg_restricted)</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;target_event&quot;           &quot;donor_events&quot;           &quot;Y_series_list&quot;         </span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co">#&gt; [4] &quot;covariates_series_list&quot; &quot;target_covariates&quot;      &quot;shock_time_vec&quot;        </span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt; [7] &quot;shock_length_vec&quot;</span></span></code></pre></div>
+<p>The restricted input contains the target and donor return series, the
+donor covariate matrices, a separate target covariate matrix, and the
+shock-timing vectors required by <code>SynthVolForecast()</code>.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>iyg_restricted<span class="sc">$</span>target_event</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2016 Election&quot;</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>iyg_restricted<span class="sc">$</span>donor_events</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2012 Election&quot;        &quot;Brexit Poll Released&quot; &quot;Brexit&quot;</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="fu">c</span>(</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>  <span class="at">number_of_series =</span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>    <span class="fu">length</span>(iyg_restricted<span class="sc">$</span>Y_series_list),</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>  <span class="at">number_of_donors =</span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>    <span class="fu">length</span>(iyg_restricted<span class="sc">$</span>donor_events),</span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a>  <span class="at">donor_covariate_sets =</span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a>    <span class="fu">length</span>(iyg_restricted<span class="sc">$</span>covariates_series_list),</span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a>  <span class="at">shock_time_entries =</span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a>    <span class="fu">length</span>(iyg_restricted<span class="sc">$</span>shock_time_vec),</span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a>  <span class="at">shock_length_entries =</span></span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a>    <span class="fu">length</span>(iyg_restricted<span class="sc">$</span>shock_length_vec)</span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a>)</span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="co">#&gt;     number_of_series     number_of_donors donor_covariate_sets </span></span>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt;                    4                    3                    3 </span></span>
+<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a><span class="co">#&gt;   shock_time_entries shock_length_entries </span></span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="co">#&gt;                    4                    4</span></span></code></pre></div>
+<p>The restricted configuration contains one target series and three
+donor series. The three donor covariate matrices correspond to the three
+donor episodes, while the shock-time and shock-length vectors contain
+one entry for every target or donor series.</p>
+</div>
+<div id="produce-a-variance-forecast" class="section level2">
+<h2>Produce a variance forecast</h2>
+<p>We use the <code>restricted</code> donor-pool configuration and
+produce a one-step-ahead conditional variance forecast. This
+configuration contains the 2012 Election, Brexit Poll Released, and
+Brexit donor episodes.</p>
+<p>The GARCH-X orders are selected automatically. With
+<code>garch_order = NULL</code>, <code>SynthVolForecast()</code> calls
+<code>auto_garchx()</code> separately for each donor and for the
+pre-shock target series. Candidate specifications are compared using BIC
+over GARCH orders up to <code>max.p = 3</code> and ARCH orders up to
+<code>max.q = 3</code>, including both symmetric and asymmetric
+specifications.</p>
+<p>The donor covariates are used for DBW matching. Because
+<code>covariate_indices = NULL</code>, the donor-side variance models
+contain the post-shock indicator but do not include additional
+covariates as GARCH-X regressors.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>iyg_fit <span class="ot">&lt;-</span> <span class="fu">SynthVolForecast</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>  <span class="at">Y_series_list =</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>    iyg_restricted<span class="sc">$</span>Y_series_list,</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>  <span class="at">covariates_series_list =</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>    iyg_restricted<span class="sc">$</span>covariates_series_list,</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>  <span class="at">target_covariates =</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>    iyg_restricted<span class="sc">$</span>target_covariates,</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>  <span class="at">shock_time_vec =</span></span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a>    iyg_restricted<span class="sc">$</span>shock_time_vec,</span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>  <span class="at">shock_length_vec =</span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a>    iyg_restricted<span class="sc">$</span>shock_length_vec,</span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a>  <span class="at">dbw_indices =</span> <span class="fu">seq_len</span>(</span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a>    <span class="fu">ncol</span>(iyg_restricted<span class="sc">$</span>target_covariates)</span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a>  ),</span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a>  <span class="at">dbw_center =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a>  <span class="at">dbw_scale =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a>  <span class="at">penalty_lambda =</span> <span class="fl">1e-2</span>,</span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a>  <span class="at">penalty_normchoice =</span> <span class="st">&quot;l2&quot;</span>,</span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a>  <span class="at">covariate_indices =</span> <span class="cn">NULL</span>,</span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a>  <span class="at">garch_order =</span> <span class="cn">NULL</span>,</span>
+<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a>  <span class="at">max.p =</span> <span class="dv">3</span><span class="dt">L</span>,</span>
+<span id="cb18-23"><a href="#cb18-23" tabindex="-1"></a>  <span class="at">max.q =</span> <span class="dv">3</span><span class="dt">L</span>,</span>
+<span id="cb18-24"><a href="#cb18-24" tabindex="-1"></a>  <span class="at">vcov.type =</span> <span class="st">&quot;robust&quot;</span>,</span>
+<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a>  <span class="at">return_fits =</span> <span class="cn">FALSE</span></span>
+<span id="cb18-26"><a href="#cb18-26" tabindex="-1"></a>)</span></code></pre></div>
+<div id="inspect-the-selected-garch-x-orders" class="section level3">
+<h3>Inspect the selected GARCH-X orders</h3>
+<p>The automatically selected orders are stored separately for the donor
+models and the target model. The order is reported as
+<code>(q, p, o)</code>, where <code>q</code> is the ARCH order,
+<code>p</code> is the GARCH order, and <code>o</code> indicates whether
+an asymmetric term is included.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>iyg_selected_orders <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  rbind,</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>meta<span class="sc">$</span>donor_orders,</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>    <span class="fu">list</span>(iyg_fit<span class="sc">$</span>meta<span class="sc">$</span>target_order)</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>  )</span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>)</span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a>iyg_order_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a>  <span class="at">Model =</span> <span class="fu">c</span>(</span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="st">&quot;Donor:&quot;</span>, iyg_restricted<span class="sc">$</span>donor_events),</span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="st">&quot;Target:&quot;</span>, iyg_restricted<span class="sc">$</span>target_event)</span>
+<span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a>  ),</span>
+<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a>  <span class="at">ARCH_q =</span> iyg_selected_orders[, <span class="dv">1</span>],</span>
+<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a>  <span class="at">GARCH_p =</span> iyg_selected_orders[, <span class="dv">2</span>],</span>
+<span id="cb19-16"><a href="#cb19-16" tabindex="-1"></a>  <span class="at">Asymmetry_o =</span> iyg_selected_orders[, <span class="dv">3</span>]</span>
+<span id="cb19-17"><a href="#cb19-17" tabindex="-1"></a>)</span>
+<span id="cb19-18"><a href="#cb19-18" tabindex="-1"></a></span>
+<span id="cb19-19"><a href="#cb19-19" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb19-20"><a href="#cb19-20" tabindex="-1"></a>  iyg_order_table,</span>
+<span id="cb19-21"><a href="#cb19-21" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb19-22"><a href="#cb19-22" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb19-23"><a href="#cb19-23" tabindex="-1"></a>    <span class="st">&quot;Model&quot;</span>,</span>
+<span id="cb19-24"><a href="#cb19-24" tabindex="-1"></a>    <span class="st">&quot;ARCH order (q)&quot;</span>,</span>
+<span id="cb19-25"><a href="#cb19-25" tabindex="-1"></a>    <span class="st">&quot;GARCH order (p)&quot;</span>,</span>
+<span id="cb19-26"><a href="#cb19-26" tabindex="-1"></a>    <span class="st">&quot;Asymmetry indicator (o)&quot;</span></span>
+<span id="cb19-27"><a href="#cb19-27" tabindex="-1"></a>  ),</span>
+<span id="cb19-28"><a href="#cb19-28" tabindex="-1"></a>  <span class="at">caption =</span> <span class="fu">paste</span>(</span>
+<span id="cb19-29"><a href="#cb19-29" tabindex="-1"></a>    <span class="st">&quot;Orders selected automatically by BIC for the&quot;</span>,</span>
+<span id="cb19-30"><a href="#cb19-30" tabindex="-1"></a>    <span class="st">&quot;donor and target variance models.&quot;</span></span>
+<span id="cb19-31"><a href="#cb19-31" tabindex="-1"></a>  )</span>
+<span id="cb19-32"><a href="#cb19-32" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Orders selected automatically by BIC for the donor and target
+variance models.</caption>
+<colgroup>
+<col width="33%" />
+<col width="18%" />
+<col width="19%" />
+<col width="28%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Model</th>
+<th align="right">ARCH order (q)</th>
+<th align="right">GARCH order (p)</th>
+<th align="right">Asymmetry indicator (o)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Donor: 2012 Election</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Donor: Brexit Poll Released</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Donor: Brexit</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Target: 2016 Election</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<p>An asymmetry indicator of one means that the selected model includes
+a GJR-type asymmetric term, allowing positive and negative return shocks
+to have different effects on conditional variance. A GARCH order of zero
+means that the specification does not include a lagged
+conditional-variance term, although it may still depend on lagged
+squared returns through its ARCH component. Because BIC selection is
+performed separately for each donor and the target, the selected orders
+need not be identical across series.</p>
+</div>
+</div>
+<div id="inspect-donor-weights-and-variance-adjustments" class="section level2">
+<h2>Inspect donor weights and variance adjustments</h2>
+<p>The donor balancing weights are stored in
+<code>linear_combinations</code>, while the estimated donor-specific
+adjustments in the conditional variance equation are stored in
+<code>meta$omega_vec</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>iyg_donor_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>  <span class="at">Donor =</span> <span class="fu">as.character</span>(iyg_restricted<span class="sc">$</span>donor_events),</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>  <span class="at">Weight =</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>linear_combinations</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>  ),</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>  <span class="at">Estimated_adjustment =</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>meta<span class="sc">$</span>omega_vec</span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>  )</span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>)</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a>  iyg_donor_summary,</span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">6</span>,</span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a>    <span class="st">&quot;Donor episode&quot;</span>,</span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>    <span class="st">&quot;DBW weight&quot;</span>,</span>
+<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a>    <span class="st">&quot;Estimated variance adjustment&quot;</span></span>
+<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a>  ),</span>
+<span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a>  <span class="at">caption =</span> <span class="fu">paste</span>(</span>
+<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a>    <span class="st">&quot;Donor weights and estimated variance adjustments&quot;</span>,</span>
+<span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a>    <span class="st">&quot;for the restricted IYG specification.&quot;</span></span>
+<span id="cb20-23"><a href="#cb20-23" tabindex="-1"></a>  )</span>
+<span id="cb20-24"><a href="#cb20-24" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Donor weights and estimated variance adjustments for the
+restricted IYG specification.</caption>
+<thead>
+<tr class="header">
+<th align="left">Donor episode</th>
+<th align="right">DBW weight</th>
+<th align="right">Estimated variance adjustment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2012 Election</td>
+<td align="right">0.184268</td>
+<td align="right">0.000288</td>
+</tr>
+<tr class="even">
+<td align="left">Brexit Poll Released</td>
+<td align="right">0.386991</td>
+<td align="right">0.002185</td>
+</tr>
+<tr class="odd">
+<td align="left">Brexit</td>
+<td align="right">0.428741</td>
+<td align="right">0.001254</td>
+</tr>
+</tbody>
+</table>
+<p>In this example, Brexit and Brexit Poll Released receive the largest
+DBW weights, while the 2012 Election receives a smaller but still
+positive weight. All three estimated variance adjustments are positive,
+so each donor contributes to raising the target’s baseline variance
+forecast.</p>
+<p>The weighted donor adjustment is stored in
+<code>meta$combined_omega</code>.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>iyg_adjustment_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  <span class="at">Unadjusted_forecast =</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>predictions<span class="sc">$</span>unadjusted[<span class="dv">1</span>]</span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>  ),</span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>  <span class="at">Combined_adjustment =</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>meta<span class="sc">$</span>combined_omega</span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  ),</span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>  <span class="at">Adjusted_forecast =</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>predictions<span class="sc">$</span>adjusted[<span class="dv">1</span>]</span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a>  )</span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a>)</span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a>  iyg_adjustment_table,</span>
+<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">6</span>,</span>
+<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a>    <span class="st">&quot;Unadjusted variance forecast&quot;</span>,</span>
+<span id="cb21-19"><a href="#cb21-19" tabindex="-1"></a>    <span class="st">&quot;Combined donor adjustment&quot;</span>,</span>
+<span id="cb21-20"><a href="#cb21-20" tabindex="-1"></a>    <span class="st">&quot;DBW-adjusted variance forecast&quot;</span></span>
+<span id="cb21-21"><a href="#cb21-21" tabindex="-1"></a>  ),</span>
+<span id="cb21-22"><a href="#cb21-22" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">&quot;Construction of the DBW-adjusted IYG variance forecast.&quot;</span></span>
+<span id="cb21-23"><a href="#cb21-23" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>Construction of the DBW-adjusted IYG variance
+forecast.</caption>
+<colgroup>
+<col width="33%" />
+<col width="30%" />
+<col width="36%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">Unadjusted variance forecast</th>
+<th align="right">Combined donor adjustment</th>
+<th align="right">DBW-adjusted variance forecast</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">6.8e-05</td>
+<td align="right">0.001436</td>
+<td align="right">0.001504</td>
+</tr>
+</tbody>
+</table>
+<p>The sign of the combined donor adjustment determines the direction in
+which the baseline variance forecast is changed. In this example, the
+combined adjustment is positive, so it raises the unadjusted variance
+forecast.</p>
+<p><code>SynthVolForecast()</code> enforces a positive adjusted variance
+forecast. This constraint is not binding in the present example because
+the combined adjustment is positive.</p>
+<div id="compare-the-variance-forecasts" class="section level3">
+<h3>Compare the variance forecasts</h3>
+<p>Because the latent conditional variance is not directly observed, we
+use the squared target return at the first post-shock observation as a
+realized-variance proxy.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>iyg_proxy_index <span class="ot">&lt;-</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>  iyg_restricted<span class="sc">$</span>shock_time_vec[<span class="dv">1</span>] <span class="sc">+</span> <span class="dv">1</span><span class="dt">L</span></span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>iyg_observed_proxy <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>  iyg_restricted<span class="sc">$</span>Y_series_list[[<span class="dv">1</span>]][iyg_proxy_index]</span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>iyg_forecast_values <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>  <span class="fu">as.numeric</span>(</span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>predictions<span class="sc">$</span>unadjusted[<span class="dv">1</span>]</span>
+<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a>  ),</span>
+<span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a>  <span class="fu">as.numeric</span>(</span>
+<span id="cb22-13"><a href="#cb22-13" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>predictions<span class="sc">$</span>arithmetic_mean[<span class="dv">1</span>]</span>
+<span id="cb22-14"><a href="#cb22-14" tabindex="-1"></a>  ),</span>
+<span id="cb22-15"><a href="#cb22-15" tabindex="-1"></a>  <span class="fu">as.numeric</span>(</span>
+<span id="cb22-16"><a href="#cb22-16" tabindex="-1"></a>    iyg_fit<span class="sc">$</span>predictions<span class="sc">$</span>adjusted[<span class="dv">1</span>]</span>
+<span id="cb22-17"><a href="#cb22-17" tabindex="-1"></a>  )</span>
+<span id="cb22-18"><a href="#cb22-18" tabindex="-1"></a>)</span>
+<span id="cb22-19"><a href="#cb22-19" tabindex="-1"></a></span>
+<span id="cb22-20"><a href="#cb22-20" tabindex="-1"></a>iyg_forecast_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb22-21"><a href="#cb22-21" tabindex="-1"></a>  <span class="at">Method =</span> <span class="fu">c</span>(</span>
+<span id="cb22-22"><a href="#cb22-22" tabindex="-1"></a>    <span class="st">&quot;Observed squared-return proxy&quot;</span>,</span>
+<span id="cb22-23"><a href="#cb22-23" tabindex="-1"></a>    <span class="st">&quot;Unadjusted&quot;</span>,</span>
+<span id="cb22-24"><a href="#cb22-24" tabindex="-1"></a>    <span class="st">&quot;Arithmetic mean&quot;</span>,</span>
+<span id="cb22-25"><a href="#cb22-25" tabindex="-1"></a>    <span class="st">&quot;DBW adjusted&quot;</span></span>
+<span id="cb22-26"><a href="#cb22-26" tabindex="-1"></a>  ),</span>
+<span id="cb22-27"><a href="#cb22-27" tabindex="-1"></a>  <span class="at">Variance =</span> <span class="fu">c</span>(</span>
+<span id="cb22-28"><a href="#cb22-28" tabindex="-1"></a>    iyg_observed_proxy,</span>
+<span id="cb22-29"><a href="#cb22-29" tabindex="-1"></a>    iyg_forecast_values</span>
+<span id="cb22-30"><a href="#cb22-30" tabindex="-1"></a>  ),</span>
+<span id="cb22-31"><a href="#cb22-31" tabindex="-1"></a>  <span class="at">Absolute_error =</span> <span class="fu">c</span>(</span>
+<span id="cb22-32"><a href="#cb22-32" tabindex="-1"></a>    <span class="cn">NA_real_</span>,</span>
+<span id="cb22-33"><a href="#cb22-33" tabindex="-1"></a>    <span class="fu">abs</span>(</span>
+<span id="cb22-34"><a href="#cb22-34" tabindex="-1"></a>      iyg_forecast_values <span class="sc">-</span></span>
+<span id="cb22-35"><a href="#cb22-35" tabindex="-1"></a>        iyg_observed_proxy</span>
+<span id="cb22-36"><a href="#cb22-36" tabindex="-1"></a>    )</span>
+<span id="cb22-37"><a href="#cb22-37" tabindex="-1"></a>  )</span>
+<span id="cb22-38"><a href="#cb22-38" tabindex="-1"></a>)</span>
+<span id="cb22-39"><a href="#cb22-39" tabindex="-1"></a></span>
+<span id="cb22-40"><a href="#cb22-40" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb22-41"><a href="#cb22-41" tabindex="-1"></a>  iyg_forecast_table,</span>
+<span id="cb22-42"><a href="#cb22-42" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb22-43"><a href="#cb22-43" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">6</span>,</span>
+<span id="cb22-44"><a href="#cb22-44" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb22-45"><a href="#cb22-45" tabindex="-1"></a>    <span class="st">&quot;Method&quot;</span>,</span>
+<span id="cb22-46"><a href="#cb22-46" tabindex="-1"></a>    <span class="st">&quot;Variance&quot;</span>,</span>
+<span id="cb22-47"><a href="#cb22-47" tabindex="-1"></a>    <span class="st">&quot;Absolute error&quot;</span></span>
+<span id="cb22-48"><a href="#cb22-48" tabindex="-1"></a>  ),</span>
+<span id="cb22-49"><a href="#cb22-49" tabindex="-1"></a>  <span class="at">caption =</span> <span class="fu">paste</span>(</span>
+<span id="cb22-50"><a href="#cb22-50" tabindex="-1"></a>    <span class="st">&quot;One-step variance forecast comparison for IYG&quot;</span>,</span>
+<span id="cb22-51"><a href="#cb22-51" tabindex="-1"></a>    <span class="st">&quot;under the restricted donor-pool specification.&quot;</span></span>
+<span id="cb22-52"><a href="#cb22-52" tabindex="-1"></a>  )</span>
+<span id="cb22-53"><a href="#cb22-53" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>One-step variance forecast comparison for IYG under the
+restricted donor-pool specification.</caption>
+<thead>
+<tr class="header">
+<th align="left">Method</th>
+<th align="right">Variance</th>
+<th align="right">Absolute error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Observed squared-return proxy</td>
+<td align="right">0.001750</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Unadjusted</td>
+<td align="right">0.000068</td>
+<td align="right">0.001682</td>
+</tr>
+<tr class="odd">
+<td align="left">Arithmetic mean</td>
+<td align="right">0.001310</td>
+<td align="right">0.000440</td>
+</tr>
+<tr class="even">
+<td align="left">DBW adjusted</td>
+<td align="right">0.001504</td>
+<td align="right">0.000246</td>
+</tr>
+</tbody>
+</table>
+<p>As shown in the table, the unadjusted variance forecast substantially
+underestimates the observed squared-return proxy. Both donor-based
+adjustments reduce the absolute error, and the DBW-adjusted forecast is
+the closest of the three forecasts to the observed proxy in this
+retrospective example.</p>
+<p>This result illustrates the workflow but does not imply that DBW
+weighting will outperform alternative forecasts in every
+application.</p>
+</div>
+</div>
+</div>
+<div id="interpretation-and-practical-guidance" class="section level1">
+<h1>Interpretation and practical guidance</h1>
+<p>The examples above illustrate a common workflow for post-shock mean
+and conditional variance forecasting. In practice, the quality of the
+resulting forecast depends on the definition of the target episode, the
+choice of donor episodes, and the pre-shock information used for donor
+balancing.</p>
+<p>Several practical points should be considered when using
+<strong>postshock</strong>.</p>
+<div id="align-episodes-consistently" class="section level2">
+<h2>Align episodes consistently</h2>
+<p>The target and donor series should be aligned relative to their own
+shock times. The entry in <code>shock_time_vec</code> identifies the
+final pre-shock observation, and the shock effect begins at the
+following observation.</p>
+<p>The ordering of the series, covariate matrices, shock times, and
+shock lengths must remain consistent. For MultiPool analyses, donor
+names must also match the names used in the <code>pools</code>
+specification.</p>
+</div>
+<div id="separate-donor-matching-from-model-regressors" class="section level2">
+<h2>Separate donor matching from model regressors</h2>
+<p>The arguments <code>dbw_indices</code> and
+<code>covariate_indices</code> have different roles.</p>
+<ul>
+<li><code>dbw_indices</code> selects the pre-shock covariates used to
+construct donor balancing weights.</li>
+<li><code>covariate_indices</code> selects covariates included directly
+as regressors in the donor forecasting models.</li>
+</ul>
+<p>Covariates may therefore be used for donor matching without being
+included in the ARIMA, ARIMAX, or GARCH-X equations. This distinction
+should be made explicit when defining an analysis.</p>
+</div>
+<div id="choose-donors-using-substantive-information" class="section level2">
+<h2>Choose donors using substantive information</h2>
+<p>Donor episodes should be selected using information available
+independently of the realized target outcome. Economic interpretation,
+event type, market environment, and pre-shock comparability may all be
+relevant.</p>
+<p>The MultiPool extension can be useful when donors represent distinct
+mechanisms. However, the pool definitions and aggregation rule are
+modeling choices. In particular, <code>pool_agg = &quot;sum&quot;</code> assumes
+that the pool-specific adjustments can be treated as additive
+components.</p>
+</div>
+<div id="inspect-weights-and-convergence" class="section level2">
+<h2>Inspect weights and convergence</h2>
+<p>Large DBW weights indicate donors that contribute more strongly to
+the synthetic adjustment under the selected pre-shock features and
+constraints. They should not be interpreted as probabilities that
+historical events will recur.</p>
+<p>Users should also inspect the DBW convergence information and
+consider whether the resulting weights are concentrated on only a small
+number of donors. Alternative feature sets, scaling choices, penalties,
+or pool definitions may produce different weights.</p>
+</div>
+<div id="interpret-empirical-variance-forecasts-carefully" class="section level2">
+<h2>Interpret empirical variance forecasts carefully</h2>
+<p><code>SynthVolForecast()</code> returns forecasts on the conditional
+variance scale. Taking the square root converts a variance forecast to
+the corresponding standard-deviation scale.</p>
+<p>In empirical applications, the latent conditional variance is not
+directly observed. A squared return can be used as a realized-variance
+proxy, but it is itself noisy. Forecast comparisons based on a single
+squared return should therefore be interpreted cautiously.</p>
+<p>When <code>garch_order = NULL</code>, the GARCH-X specification is
+selected automatically for each donor and the target. Users who need
+additional diagnostic information can set
+<code>return_fits = TRUE</code> and inspect the fitted model
+objects.</p>
+</div>
+<div id="avoid-post-shock-information-leakage" class="section level2">
+<h2>Avoid post-shock information leakage</h2>
+<p>Donor weights and the target baseline model should be estimated
+without using the target’s post-shock observations. Historical donor
+post-shock outcomes are used by design to estimate donor-specific shock
+effects.</p>
+<p>Realized post-shock target values may be used afterward for
+retrospective evaluation, but they should not influence donor selection,
+tuning choices, or model specification. Thus, the no-leakage restriction
+concerns information from the target’s post-shock period, not the
+already observed post-shock histories of the donor episodes.</p>
+<p>See the help pages for <code>dbw()</code>,
+<code>SynthPrediction()</code>, and <code>SynthVolForecast()</code> for
+complete argument and return-value documentation.</p>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p>Lin, J., and Eck, D. J. (2021). Minimizing post-shock forecasting
+error through aggregation of outside information. <em>International
+Journal of Forecasting</em>, 37(4), 1710–1727. <a href="https://doi.org/10.1016/j.ijforecast.2021.03.010" class="uri">https://doi.org/10.1016/j.ijforecast.2021.03.010</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
