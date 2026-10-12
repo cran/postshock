@@ -355,8 +355,8 @@ iyg_order_table <- data.frame(
     paste("Donor:", iyg_restricted$donor_events),
     paste("Target:", iyg_restricted$target_event)
   ),
-  ARCH_q = iyg_selected_orders[, 1],
-  GARCH_p = iyg_selected_orders[, 2],
+  GARCH_q = iyg_selected_orders[, 1],
+  ARCH_p = iyg_selected_orders[, 2],
   Asymmetry_o = iyg_selected_orders[, 3]
 )
 
@@ -365,9 +365,9 @@ knitr::kable(
   row.names = FALSE,
   col.names = c(
     "Model",
-    "ARCH order (q)",
-    "GARCH order (p)",
-    "Asymmetry indicator (o)"
+    "GARCH order (q)",
+    "ARCH order (p)",
+    "Asymmetry order (o)"
   ),
   caption = paste(
     "Orders selected automatically by BIC for the",

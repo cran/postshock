@@ -11,8 +11,12 @@
 #' @param pool_weights Optional named numeric vector of pool weights.
 #' @param base_use_dbw Logical. Whether DBW is used in the baseline forecast.
 #' @param pool_use_dbw Logical. Whether DBW is used within each pool.
-#'#' @param ... Additional arguments forwarded to the underlying
+#' @param ... Common matching, ARIMA, seasonal, penalty and target-control
+#'   arguments forwarded unchanged to the underlying
 #'   \code{\link{SynthPrediction}} calls.
+#'   Duplicate named settings and \code{use_dbw} in \code{...} are errors:
+#'   use \code{base_use_dbw} and \code{pool_use_dbw} for the two paths.
+#'   \code{geometric_sets} remains reserved; there are no pool-specific overrides.
 #'   
 #' @return
 #' Same structure as \code{SynthPrediction()}, with extra:
@@ -53,6 +57,13 @@ SynthPredictionMultiPool <- function(
   
   # ---- capture dots; DROP multipool-only args to avoid leaking/recursion ----
   dots <- list(...)
+  if (anyDuplicated(names(dots))) {
+    stop("MultiPool: duplicate settings in ...: ",
+         paste(unique(names(dots)[duplicated(names(dots))]), collapse = ", "))
+  }
+  if ("use_dbw" %in% names(dots)) {
+    stop("MultiPool: use_dbw conflicts with base_use_dbw / pool_use_dbw; use those switches instead.")
+  }
   drop_names <- c("pools", "pool_agg", "pool_weights", "base_use_dbw", "pool_use_dbw")
   dots <- dots[setdiff(names(dots), drop_names)]
   

@@ -1291,9 +1291,17 @@ Brexit donor episodes.</p>
 <code>garch_order = NULL</code>, <code>SynthVolForecast()</code> calls
 <code>auto_garchx()</code> separately for each donor and for the
 pre-shock target series. Candidate specifications are compared using BIC
-over GARCH orders up to <code>max.p = 3</code> and ARCH orders up to
-<code>max.q = 3</code>, including both symmetric and asymmetric
+over GARCH orders up to <code>max.q = 3</code> and ARCH orders up to
+<code>max.p = 3</code>, including both symmetric and asymmetric
 specifications.</p>
+<p>Candidate fits must return without error, with a finite numeric
+scalar convergence code of zero, a nonempty finite real coefficient
+vector, and finite BIC. The eligible fit with the lowest BIC is
+selected; exact ties retain the first eligible candidate. If none
+qualifies, selection stops with an error. Non-finite standard errors
+alone do not exclude a fit. The optional backcast refit replaces the
+grid fit only if it meets the same conditions and strictly lowers BIC;
+otherwise the grid fit is retained.</p>
 <p>The donor covariates are used for DBW matching. Because
 <code>covariate_indices = NULL</code>, the donor-side variance models
 contain the post-shock indicator but do not include additional
@@ -1328,9 +1336,10 @@ covariates as GARCH-X regressors.</p>
 <h3>Inspect the selected GARCH-X orders</h3>
 <p>The automatically selected orders are stored separately for the donor
 models and the target model. The order is reported as
-<code>(q, p, o)</code>, where <code>q</code> is the ARCH order,
-<code>p</code> is the GARCH order, and <code>o</code> indicates whether
-an asymmetric term is included.</p>
+<code>(q, p, o)</code>, where <code>q</code> is the GARCH order,
+<code>p</code> is the ARCH order, and <code>o</code> is the asymmetry
+order. The automatic search considers <code>o = 0</code> and
+<code>o = 1</code> by default.</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>iyg_selected_orders <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
 <span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  rbind,</span>
 <span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>  <span class="fu">c</span>(</span>
@@ -1344,8 +1353,8 @@ an asymmetric term is included.</p>
 <span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="st">&quot;Donor:&quot;</span>, iyg_restricted<span class="sc">$</span>donor_events),</span>
 <span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="st">&quot;Target:&quot;</span>, iyg_restricted<span class="sc">$</span>target_event)</span>
 <span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a>  ),</span>
-<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a>  <span class="at">ARCH_q =</span> iyg_selected_orders[, <span class="dv">1</span>],</span>
-<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a>  <span class="at">GARCH_p =</span> iyg_selected_orders[, <span class="dv">2</span>],</span>
+<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a>  <span class="at">GARCH_q =</span> iyg_selected_orders[, <span class="dv">1</span>],</span>
+<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a>  <span class="at">ARCH_p =</span> iyg_selected_orders[, <span class="dv">2</span>],</span>
 <span id="cb19-16"><a href="#cb19-16" tabindex="-1"></a>  <span class="at">Asymmetry_o =</span> iyg_selected_orders[, <span class="dv">3</span>]</span>
 <span id="cb19-17"><a href="#cb19-17" tabindex="-1"></a>)</span>
 <span id="cb19-18"><a href="#cb19-18" tabindex="-1"></a></span>
@@ -1354,9 +1363,9 @@ an asymmetric term is included.</p>
 <span id="cb19-21"><a href="#cb19-21" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
 <span id="cb19-22"><a href="#cb19-22" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(</span>
 <span id="cb19-23"><a href="#cb19-23" tabindex="-1"></a>    <span class="st">&quot;Model&quot;</span>,</span>
-<span id="cb19-24"><a href="#cb19-24" tabindex="-1"></a>    <span class="st">&quot;ARCH order (q)&quot;</span>,</span>
-<span id="cb19-25"><a href="#cb19-25" tabindex="-1"></a>    <span class="st">&quot;GARCH order (p)&quot;</span>,</span>
-<span id="cb19-26"><a href="#cb19-26" tabindex="-1"></a>    <span class="st">&quot;Asymmetry indicator (o)&quot;</span></span>
+<span id="cb19-24"><a href="#cb19-24" tabindex="-1"></a>    <span class="st">&quot;GARCH order (q)&quot;</span>,</span>
+<span id="cb19-25"><a href="#cb19-25" tabindex="-1"></a>    <span class="st">&quot;ARCH order (p)&quot;</span>,</span>
+<span id="cb19-26"><a href="#cb19-26" tabindex="-1"></a>    <span class="st">&quot;Asymmetry order (o)&quot;</span></span>
 <span id="cb19-27"><a href="#cb19-27" tabindex="-1"></a>  ),</span>
 <span id="cb19-28"><a href="#cb19-28" tabindex="-1"></a>  <span class="at">caption =</span> <span class="fu">paste</span>(</span>
 <span id="cb19-29"><a href="#cb19-29" tabindex="-1"></a>    <span class="st">&quot;Orders selected automatically by BIC for the&quot;</span>,</span>
@@ -1367,17 +1376,17 @@ an asymmetric term is included.</p>
 <caption>Orders selected automatically by BIC for the donor and target
 variance models.</caption>
 <colgroup>
-<col width="33%" />
+<col width="35%" />
+<col width="20%" />
 <col width="18%" />
-<col width="19%" />
-<col width="28%" />
+<col width="25%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="left">Model</th>
-<th align="right">ARCH order (q)</th>
-<th align="right">GARCH order (p)</th>
-<th align="right">Asymmetry indicator (o)</th>
+<th align="right">GARCH order (q)</th>
+<th align="right">ARCH order (p)</th>
+<th align="right">Asymmetry order (o)</th>
 </tr>
 </thead>
 <tbody>
@@ -1407,8 +1416,8 @@ variance models.</caption>
 </tr>
 </tbody>
 </table>
-<p>An asymmetry indicator of one means that the selected model includes
-a GJR-type asymmetric term, allowing positive and negative return shocks
+<p>An asymmetry order of one means that the selected model includes a
+GJR-type asymmetric term, allowing positive and negative return shocks
 to have different effects on conditional variance. A GARCH order of zero
 means that the specification does not include a lagged
 conditional-variance term, although it may still depend on lagged

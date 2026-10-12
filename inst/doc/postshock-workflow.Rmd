@@ -672,8 +672,16 @@ Brexit Poll Released, and Brexit donor episodes.
 The GARCH-X orders are selected automatically. With `garch_order = NULL`,
 `SynthVolForecast()` calls `auto_garchx()` separately for each donor and for
 the pre-shock target series. Candidate specifications are compared using BIC
-over GARCH orders up to `max.p = 3` and ARCH orders up to `max.q = 3`,
+over GARCH orders up to `max.q = 3` and ARCH orders up to `max.p = 3`,
 including both symmetric and asymmetric specifications.
+
+Candidate fits must return without error, with a finite numeric scalar
+convergence code of zero, a nonempty finite real coefficient vector, and
+finite BIC. The eligible fit with the lowest BIC is selected; exact ties
+retain the first eligible candidate. If none qualifies, selection stops
+with an error. Non-finite standard errors alone do not exclude a fit.
+The optional backcast refit replaces the grid fit only if it meets the
+same conditions and strictly lowers BIC; otherwise the grid fit is retained.
 
 The donor covariates are used for DBW matching. Because
 `covariate_indices = NULL`, the donor-side variance models contain the
@@ -713,8 +721,8 @@ iyg_fit <- SynthVolForecast(
 
 The automatically selected orders are stored separately for the donor models
 and the target model. The order is reported as `(q, p, o)`, where `q` is the
-ARCH order, `p` is the GARCH order, and `o` indicates whether an asymmetric
-term is included.
+GARCH order, `p` is the ARCH order, and `o` is the asymmetry order. The
+automatic search considers `o = 0` and `o = 1` by default.
 
 ```{r inspect-iyg-orders}
 iyg_selected_orders <- do.call(
@@ -730,8 +738,8 @@ iyg_order_table <- data.frame(
     paste("Donor:", iyg_restricted$donor_events),
     paste("Target:", iyg_restricted$target_event)
   ),
-  ARCH_q = iyg_selected_orders[, 1],
-  GARCH_p = iyg_selected_orders[, 2],
+  GARCH_q = iyg_selected_orders[, 1],
+  ARCH_p = iyg_selected_orders[, 2],
   Asymmetry_o = iyg_selected_orders[, 3]
 )
 
@@ -740,9 +748,9 @@ knitr::kable(
   row.names = FALSE,
   col.names = c(
     "Model",
-    "ARCH order (q)",
-    "GARCH order (p)",
-    "Asymmetry indicator (o)"
+    "GARCH order (q)",
+    "ARCH order (p)",
+    "Asymmetry order (o)"
   ),
   caption = paste(
     "Orders selected automatically by BIC for the",
@@ -751,7 +759,7 @@ knitr::kable(
 )
 ```
 
-An asymmetry indicator of one means that the selected model includes a
+An asymmetry order of one means that the selected model includes a
 GJR-type asymmetric term, allowing positive and negative return shocks to have
 different effects on conditional variance. A GARCH order of zero means that
 the specification does not include a lagged conditional-variance term, although

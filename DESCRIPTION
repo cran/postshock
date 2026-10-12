@@ -1,7 +1,7 @@
 Package: postshock
 Type: Package
 Title: Donor-Adjusted Post-Shock Forecasting
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: 
     c(
       person(
@@ -36,9 +36,9 @@ LazyData: true
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0
 NeedsCompilation: no
-Packaged: 2026-07-17 17:38:07 UTC; wangqiyang
+Packaged: 2026-10-12 06:55:47 UTC; wangqiyang
 Author: Qiyang Wang [aut, cre] (ORCID: <https://orcid.org/0009-0002-6373-440X>),
   Daniel J. Eck [aut]
 Maintainer: Qiyang Wang <wangqiyang497@gmail.com>
 Repository: CRAN
-Date/Publication: 2026-07-27 14:40:02 UTC
+Date/Publication: 2026-10-12 13:30:40 UTC

@@ -35,11 +35,13 @@
 #'   \code{"l2"}, forwarded to \code{\link{dbw}}.
 #' @param return_fits Logical. If \code{TRUE}, the fitted donor and target
 #'   GARCH objects are returned.
-#' @param garch_order Optional fixed GARCH-X order \code{c(q, p, o)}. If
-#'   \code{NULL}, the order is selected by \code{\link{auto_garchx}}.
-#' @param max.p Nonnegative integer. Maximum GARCH lag order passed to
+#' @param garch_order Optional fixed GARCH-X order \code{c(q, p, o)}, where
+#'   \code{q} is the GARCH order, \code{p} is the ARCH order, and \code{o}
+#'   is the asymmetry order. If \code{NULL}, the order is selected by
 #'   \code{\link{auto_garchx}}.
-#' @param max.q Nonnegative integer. Maximum ARCH lag order passed to
+#' @param max.p Nonnegative integer. Maximum ARCH lag order passed to
+#'   \code{\link{auto_garchx}}.
+#' @param max.q Nonnegative integer. Maximum GARCH lag order passed to
 #'   \code{\link{auto_garchx}}.
 #' @param backcast.initial Optional positive numeric scalar used as
 #'   \code{backcast.values} when \code{garch_order} is fixed.
