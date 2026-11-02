@@ -399,6 +399,8 @@ empirical variance forecasts carefully</a></li>
 <li><a href="#avoid-post-shock-information-leakage" id="toc-avoid-post-shock-information-leakage">Avoid post-shock
 information leakage</a></li>
 </ul></li>
+<li><a href="#full-technical-report" id="toc-full-technical-report">Full
+Technical Report</a></li>
 <li><a href="#references" id="toc-references">References</a></li>
 </ul>
 </div>
@@ -1733,6 +1735,19 @@ already observed post-shock histories of the donor episodes.</p>
 <code>SynthPrediction()</code>, and <code>SynthVolForecast()</code> for
 complete argument and return-value documentation.</p>
 </div>
+</div>
+<div id="full-technical-report" class="section level1">
+<h1>Full Technical Report</h1>
+<p>The installed package also includes a longer Technical Report with
+method details, simulations, and the COP, IYG, and Apple applications.
+It is distributed as a prebuilt PDF, so opening it does not rerun the
+examples or require LaTeX:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>report <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;technical_report&quot;</span>, <span class="st">&quot;Technical_report.pdf&quot;</span>,</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>                      <span class="at">package =</span> <span class="st">&quot;postshock&quot;</span>, <span class="at">mustWork =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>utils<span class="sc">::</span><span class="fu">browseURL</span>(report)</span></code></pre></div>
+<p>See <code>help(&quot;technical_report&quot;, package = &quot;postshock&quot;)</code> for
+the bundled sources and the distinction between the full report and this
+workflow vignette.</p>
 </div>
 <div id="references" class="section level1">
 <h1>References</h1>

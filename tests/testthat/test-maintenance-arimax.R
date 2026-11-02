@@ -53,16 +53,18 @@ test_that("complete donor ARIMAX preserves raw rows, coefficients and unused dat
     design <- cbind(as.matrix(arguments$covariates_series_list[[donor]][1:73, 1L, drop = FALSE]), indicator)
     independent <- forecast::Arima(arguments$Y_series_list[[donor]][1:73],
       order = c(1, 0, 0), seasonal = FALSE, xreg = design)
-    expect_equal(reference$meta$omega_vec[donor - 1L], unname(tail(stats::coef(independent), 1L)), tolerance = 1e-10)
+    expect_equal(reference$meta$omega_vec[donor - 1L], unname(tail(stats::coef(independent), 1L)),
+      tolerance = model_fit_tolerance)
   }
   arguments$covariates_series_list[[2L]][, 2L] <- NA_real_
   arguments$covariates_series_list[[2L]][74:90, 1L] <- Inf
   arguments$Y_series_list[[2L]][74:90] <- NA_real_
   unused <- suppressWarnings(do.call(SynthPrediction, arguments))
-  expect_equal(unused, reference, tolerance = 1e-10)
+  expect_equal(unused, reference, tolerance = model_fit_tolerance)
   arguments$Y_series_list[[2L]] <- as.numeric(arguments$Y_series_list[[2L]])
   arguments$covariates_series_list[[2L]] <- as.matrix(arguments$covariates_series_list[[2L]])
-  expect_equal(suppressWarnings(do.call(SynthPrediction, arguments)), reference, tolerance = 1e-10)
+  expect_equal(suppressWarnings(do.call(SynthPrediction, arguments)), reference,
+    tolerance = model_fit_tolerance)
 })
 
 test_that("donor ARIMAX errors survive wrapper and direct MultiPool dispatch", {

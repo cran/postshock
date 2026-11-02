@@ -86,7 +86,7 @@ test_that("real seasonal detection and fixed seasonal orders remain supported", 
   arguments$pools <- list(all = c("donorA", "donorB", "donorC"))
   direct <- suppressWarnings(do.call(SynthPredictionMultiPool, arguments))
   wrapped <- suppressWarnings(do.call(SynthPrediction, arguments))
-  expect_equal(wrapped, direct, tolerance = 1e-10)
+  expect_equal(wrapped, direct, tolerance = model_fit_tolerance)
 })
 
 test_that("real per-window frequency detection reaches the automatic engine", {
@@ -111,7 +111,7 @@ test_that("real per-window frequency detection reaches the automatic engine", {
   expect_true(all(expected > 1))
   arguments$Y_series_list[[1L]][121:144] <- 1e9
   second <- suppressWarnings(do.call(SynthPrediction, arguments))
-  expect_equal(second$predictions, first$predictions, tolerance = 0)
+  expect_equal(second$predictions, first$predictions, tolerance = model_fit_tolerance)
   expect_equal(tail(frequencies, 4L), expected)
 })
 

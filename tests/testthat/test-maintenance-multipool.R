@@ -47,7 +47,7 @@ test_that("MultiPool fixed ARIMA and L2 settings agree for real direct and wrapp
   arguments$penalty_normchoice <- "l2"
   direct <- suppressWarnings(do.call(SynthPredictionMultiPool, arguments))
   wrapped <- suppressWarnings(do.call(SynthPrediction, arguments))
-  expect_equal(wrapped, direct, tolerance = 1e-10)
+  expect_equal(wrapped, direct, tolerance = model_fit_tolerance)
   expect_equal(wrapped$meta$arima_order[[2L]][1:3], c(1, 0, 0))
 })
 

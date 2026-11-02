@@ -116,6 +116,22 @@ Open the vignette with
 vignette("postshock-workflow", package = "postshock")
 ```
 
+### Full Technical Report
+
+The package also includes the full Technical Report, covering the methods,
+simulation examples, and COP, IYG, and Apple applications. Open the installed
+PDF without rerunning any analysis:
+
+``` r
+report <- system.file("technical_report", "Technical_report.pdf",
+                      package = "postshock", mustWork = TRUE)
+utils::browseURL(report)
+```
+
+Use `help("technical_report", package = "postshock")` for details. The verified
+PDF and its source files are bundled separately from the shorter workflow
+vignette; reading the PDF does not require R Markdown or LaTeX.
+
 ------------------------------------------------------------------------
 
 ## Main Functions

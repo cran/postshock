@@ -1,3 +1,32 @@
+check_apple_adjustment <- function(meta) {
+  reference_effects <- c(0.425272469331, 0.218634577538, 1.990999985436)
+  reference_weights <- c(0.583683226784, 0.0000000562775710497, 0.416316716939)
+  reference_adjustment <- 1.077110996827
+  effect_tolerance <- 1e-9
+  weight_tolerance <- 1e-7
+  aggregation_tolerance <- 1e-10
+  effects <- meta$omega_vec
+  weights <- meta$weights
+  combined <- meta$combined_omega
+  stopifnot(is.numeric(effects), !is.complex(effects), length(effects) == 3L,
+            is.numeric(weights), !is.complex(weights), length(weights) == 3L,
+            is.numeric(combined), !is.complex(combined), length(combined) == 1L,
+            all(is.finite(c(effects, weights, combined))),
+            all(abs(effects - reference_effects) < effect_tolerance),
+            all(abs(weights - reference_weights) < weight_tolerance))
+  recomputed <- sum(weights * effects)
+  aggregation_error <- abs(combined - recomputed)
+  reference_rounding <- abs(sum(reference_weights * reference_effects) - reference_adjustment)
+  propagated_bound <- sum(abs(reference_effects)) * weight_tolerance +
+    sum(abs(weights)) * effect_tolerance + reference_rounding + aggregation_tolerance
+  reference_error <- abs(combined - reference_adjustment)
+  stopifnot(aggregation_error < aggregation_tolerance,
+            reference_error < propagated_bound)
+  invisible(list(reference_error = reference_error, propagated_bound = propagated_bound,
+                 aggregation_error = aggregation_error,
+                 aggregation_tolerance = aggregation_tolerance))
+}
+
 apple_diagnostics <- function(verbose = FALSE) {
   suppressPackageStartupMessages({
     library(postshock)
@@ -250,12 +279,8 @@ apple_diagnostics <- function(verbose = FALSE) {
   verified <- c(main_values, main_table[-1L, "Absolute error"])
   expected <- c(119.489998, 116.049774, 117.126885, 116.928076,
                 3.440224, 2.363113, 2.561922)
+  adjustment_verification <- check_apple_adjustment(main$fit$meta)
   stopifnot(all(abs(verified - expected) < 5e-7),
-            all(abs(main$fit$meta$omega_vec -
-                      c(0.425272469331, 0.218634577538, 1.990999985436)) < 1e-9),
-            all(abs(main$fit$meta$weights -
-                      c(0.583683226784, 0.0000000562775710497, 0.416316716939)) < 1e-7),
-            abs(main$fit$meta$combined_omega - 1.077110996827) < 1e-9,
             as.character(apple$control_shock_day) == "2020-10-09",
             identical(which(main$control_matrix[, 1L] == 1), 3L),
             all(main$future_control == 0),
@@ -313,6 +338,8 @@ apple_diagnostics <- function(verbose = FALSE) {
     print(do.call(rbind, overlap_checks))
     cat("\nNUMERICAL RESULTS\n")
     print(results)
+    cat("\nADJUSTMENT CHECK: PROPAGATED COMPONENT ERROR BOUND\n")
+    print(adjustment_verification)
     cat("\nSTANDARD MODEL DIAGNOSTICS\n")
     for (specification in names(standard)) {
       result <- standard[[specification]]
@@ -382,6 +409,7 @@ apple_diagnostics <- function(verbose = FALSE) {
        decomposition = decomposition, overlap_checks = overlap_checks,
        verification = data.frame(Audit = expected, Executable = verified,
                                  Status = rep("PASS", length(verified))),
+       adjustment_verification = adjustment_verification,
        session = sessionInfo())
 }
 

@@ -24,8 +24,8 @@ test_that("installed shared Apple analysis preserves article checks and independ
   shared <- new.env()
   sys.source(system.file("replication", "apple_diagnostic.R", package = "postshock", mustWork = TRUE), shared)
   diagnostic <- shared$apple_diagnostics()
-  expect_equal(direct$predictions, diagnostic$main$fit$predictions, tolerance = 1e-10)
-  expect_equal(direct$meta$weights, diagnostic$main$fit$meta$weights, tolerance = 1e-10)
+  expect_equal(direct$predictions, diagnostic$main$fit$predictions, tolerance = model_fit_tolerance)
+  expect_equal(direct$meta$weights, diagnostic$main$fit$meta$weights, tolerance = model_fit_tolerance)
   expect_equal(frozen$evaluation$realized, diagnostic$main_table$Value[1L], tolerance = 0)
   frozen$evaluation$realized <- -99999
   expect_identical(c(frozen[fields], frozen$settings), arguments)

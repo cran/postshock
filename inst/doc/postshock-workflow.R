@@ -481,3 +481,8 @@ knitr::kable(
   )
 )
 
+## ----technical-report-location, eval=FALSE------------------------------------
+# report <- system.file("technical_report", "Technical_report.pdf",
+#                       package = "postshock", mustWork = TRUE)
+# utils::browseURL(report)
+

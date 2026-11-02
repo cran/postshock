@@ -57,7 +57,10 @@ The development-checkout builder is \file{data-raw/aapl_s1_input.R}
 Its implementation is installed as \file{replication/apple_data_builder.R}.
 The shared Apple diagnostic script is installed as
 \file{replication/apple_diagnostic.R} and retains the article's numerical
-assertions. Its implementation manifest distinguishes same-version builds.
+assertions. Donor-effect and weight reference checks retain their original
+absolute tolerances; their error bounds are propagated to the combined
+adjustment, with a separate weighted-sum identity check. Its implementation
+manifest distinguishes same-version builds.
 }
 \examples{
 data(aapl_s1_input)

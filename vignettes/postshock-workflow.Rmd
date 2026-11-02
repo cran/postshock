@@ -996,6 +996,21 @@ histories of the donor episodes.
 See the help pages for `dbw()`, `SynthPrediction()`, and
 `SynthVolForecast()` for complete argument and return-value documentation.
 
+# Full Technical Report
+
+The installed package also includes a longer Technical Report with method
+details, simulations, and the COP, IYG, and Apple applications. It is distributed
+as a prebuilt PDF, so opening it does not rerun the examples or require LaTeX:
+
+```{r technical-report-location, eval=FALSE}
+report <- system.file("technical_report", "Technical_report.pdf",
+                      package = "postshock", mustWork = TRUE)
+utils::browseURL(report)
+```
+
+See `help("technical_report", package = "postshock")` for the bundled sources
+and the distinction between the full report and this workflow vignette.
+
 # References
 
 Lin, J., and Eck, D. J. (2021). Minimizing post-shock forecasting error
